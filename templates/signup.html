@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f6f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .card h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .card form {
+            display: flex;
+            flex-direction: column;
+        }
+        .card form label {
+            margin-bottom: 8px;
+        }
+        .card form input {
+            padding: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .card form button {
+            padding: 8px 16px;
+            background-color: #0070e0;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .card form button:hover {
+            background-color: #005cb2;
+        }
+        .card p {
+            margin-top: 16px;
+            font-size: 14px;
+        }
+        .card p a {
+            color: #0070e0;
+            text-decoration: none;
+        }
+        .card p a:hover {
+            text-decoration: underline;
+        }
+        .logo {
+            width: 300px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    {% if session['username'] %}
+        <p>You are already logged in as {{ session['username'] }}</p>
+        <p><a href="{{ url_for('home') }}">Go to Homepage</a></p>
+    {% else %}
+        <div class="card">
+            <img src="static/images/logo.png" alt="Logo" class="logo">
+            <h2>Sign Up</h2>
+            {% if message %}
+                <p style="color: red;">{{ message }}</p>
+            {% endif %}
+            <form action="/signup" method="post">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit">Sign Up</button>
+            </form>
+            <p>Already have an account? <a href="/login">Login</a></p>
+        </div>
+    {% endif %}
+</body>
+</html>

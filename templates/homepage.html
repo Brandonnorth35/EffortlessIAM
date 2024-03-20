@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f6f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button[type="submit"] {
+            width: 100%;
+            background-color: #0077CC;
+            color: #fff;
+            padding: 12px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button[type="submit"]:hover {
+            background-color: #005c99;
+        }
+        p {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        a {
+            color: #0077CC;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .logo {
+            width: 100px;
+            height: 40px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .alert {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .alert-success {
+            background-color: #28a745;
+            color: #fff;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    {% if session['username'] %}
+        <p>You are already logged in as {{ session['username'] }}</p>
+        <p><a href="{{ url_for('home') }}">Go to Homepage</a></p>
+    {% else %}
+        <div class="login-container">
+            <img src="/static/images/logo.png" alt="Logo" class="logo">
+            <h2>Login</h2>
+            {% if message %}
+                <p class="alert alert-danger">{{ message }}</p>
+            {% endif %}
+            <form action="/login" method="post">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit">Login</button>
+            </form>
+            <p>Don't have an account? <a href="/signup">Sign up</a></p>
+        </div>
+    {% endif %}
+</body>
+</html>
+
+<script>
+    // Function to remove app
+    function removeApp(index) {
+        if (confirm("Are you sure you want to remove this app?")) {
+            window.location.href = "/remove_app/" + index;
+        }
+    }
+
+    // Function to handle form submission
+    document.getElementById("addAppForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        fetch("/add_app", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessMessage("App added to your library");
+                window.location.reload();
+            } else {
+                showErrorMessage("App could not be added to your library");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorMessage("An error occurred while adding the app");
+        });
+    });
+
+    // Function to show success message
+    function showSuccessMessage(message) {
+        var successDiv = document.createElement('div');
+        successDiv.className = 'alert alert-success';
+        successDiv.textContent = message;
+        document.body.appendChild(successDiv);
+        setTimeout(function() {
+            successDiv.remove();
+        }, 3000);
+    }
+
+// Function to show error message
+function showErrorMessage(message) {
+    var errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger';
+    errorDiv.textContent = message;
+    document.body.appendChild(errorDiv);
+    setTimeout(function() {
+        errorDiv.remove();
+    }, 3000);
+}
+</script>
