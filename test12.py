@@ -1,51 +1,71 @@
+import logging
 from flask import Flask, request, session, redirect, url_for, flash, render_template
+from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
-import json
+import hashlib
 import os
+
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+# Suppress SQLALCHEMY_TRACK_MODIFICATIONS warning
+import warnings
+from sqlalchemy.exc import SAWarning
+warnings.simplefilter("ignore", category=SAWarning)
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///user_accounts.db'
 
-# Configure Flask-Mail
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = 'effortlessiam1@gmail.com'
-app.config['MAIL_PASSWORD'] = 'djvf logu kihb fpvz'
+db = SQLAlchemy(app)
 
-mail = Mail(app)
-
-# Load user accounts from JSON file
-with open('user_accounts.json') as f:
-    users = json.load(f)
+# Define the User model
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email_hash = db.Column(db.String(64), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    password_vault = db.Column(db.JSON)
 
 # Placeholder for storing user SSO information
 user_sso_info = {}
 
-# Function to send email verification
-def send_verification_email(email, verification_token):
-    verification_link = url_for('verify_email', token=verification_token, _external=True)
-    msg = Message('Email Verification', sender='your-email@example.com', recipients=[email])
-    msg.body = f'Click the following link to verify your email: {verification_link}'
-    mail.send(msg)
+# Route for signup page
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        # Check if password and confirm password match
+        if password != confirm_password:
+            flash('Passwords do not match', 'error')
+            return redirect(url_for('signup'))
+
+        # Check if email is already registered
+        existing_user = User.query.filter_by(email_hash=hashlib.sha256(email.encode()).hexdigest()).first()
+        if existing_user:
+            flash('Email already exists. Please login.', 'error')
+            return redirect(url_for('login'))
+
+        # Create new user
+        new_user = User(email_hash=hashlib.sha256(email.encode()).hexdigest(), password_hash=generate_password_hash(password))
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash('Account created successfully. Please login.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('signup.html')
 
 # Function to generate a secure token
 def generate_token(data):
     serializer = URLSafeTimedSerializer(app.secret_key)
     return serializer.dumps(data)
-
-# Function to verify a token
-def verify_token(token):
-    serializer = URLSafeTimedSerializer(app.secret_key)
-    try:
-        data = serializer.loads(token, max_age=3600)  # Token valid for 1 hour
-        return data
-    except SignatureExpired:
-        return None  # Token expired
-    except BadSignature:
-        return None  # Token invalid
 
 # Before each request, initialize the list of apps in the session
 @app.before_request
@@ -64,14 +84,20 @@ def home():
 # Route to login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Check if user is already logged in
+    if 'username' in session:
+        # Redirect logged-in user to the homepage
+        return redirect(url_for('home'))
+
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
 
-        # Check if email is registered and verified
-        if email in users and users[email]['verified']:
+        # Check if email is registered
+        user = User.query.filter_by(email_hash=hashlib.sha256(email.encode()).hexdigest()).first()
+        if user:
             # Check if credentials are valid
-            if check_password_hash(users[email]['password'], password):
+            if check_password_hash(user.password_hash, password):
                 # Set up session to keep the user logged in
                 session['username'] = email
                 session['token'] = generate_token({'email': email})
@@ -84,34 +110,23 @@ def login():
                 flash('Invalid email or password', 'error')
                 return render_template('login.html')
         else:
-            # If email is not registered or not verified, return message to verify email
-            flash('Please verify your email to log in', 'error')
-            return render_template('login.html')
+            # If email is not registered, return message to register
+            flash('Email not found. Please sign up.', 'error')
+            return redirect(url_for('signup'))
 
     # If request method is GET, render the login page
     return render_template('login.html')
 
-# Route for verifying email
-@app.route('/verify_email/<token>', methods=['GET'])
-def verify_email(token):
-    # Verify email verification token
-    data = verify_token(token)
-    if data and 'email' in data:
-        email = data['email']
-        users[email]['verified'] = True
-        flash('Email verification successful. You can now log in.', 'success')
-        return redirect('/login')
-    else:
-        flash('Invalid or expired email verification link.', 'error')
-        return redirect('/')
-
 # Route to logout
 @app.route('/logout')
 def logout():
+    # Check if user is logged in
     if 'username' in session:
-        del user_sso_info[session['username']]  # Remove user SSO info
-    session.pop('username', None)
-    session.pop('token', None)
+        # Remove user SSO info
+        del user_sso_info[session['username']]
+        # Clear session variables
+        session.clear()
+        flash('You have been logged out successfully', 'success')
     return redirect('/login')
 
 # Route to serve the SSO page
@@ -137,7 +152,7 @@ def add_app():
         return redirect(url_for('sso'))
 
     session['apps'].append({'name': app_name, 'url': app_url})
-    flash('App added successfully', 'success')
+    flash('    App added successfully', 'success')
     return redirect(url_for('sso'))
 
 # Route to remove an app from the SSO page
@@ -157,5 +172,16 @@ def remove_app(app_index):
     flash('App removed successfully', 'success')
     return redirect(url_for('sso'))
 
-if __name__ == "__main__":
+# Ensure tables are created before running the app
+with app.app_context():
+    db.create_all()
+
+
+# Check if the database file exists
+if not os.path.exists('user_accounts.db'):
+    # Create the database file by running the Flask application
+    with app.app_context():
+        db.create_all()
+
+if __name__ == '__main__':
     app.run(debug=True)
