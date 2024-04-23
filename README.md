@@ -1,4 +1,5 @@
 **EffortlessIAM - Flask Authenticator App**
+
 This Flask project is an authenticator application that allows users to securely manage and generate Time-based One-Time Passwords (TOTP) for two-factor authentication (2FA).
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
