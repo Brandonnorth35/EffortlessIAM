@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Authenticator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f6f6;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: #0077CC;
+            color: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-title {
+            font-size: 30px;
+            font-weight: bold;
+            margin-left: 20px;
+        }
+        .add-account-button {
+            background-color: #0077CC;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 20px;
+            cursor: pointer;
+        }
+        .add-account-button:hover {
+            background-color: #005c99;
+        }
+        .content {
+            padding: 20px;
+        }
+        .account-item {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .account-item h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .otp-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .otp {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .timer {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-title">Authenticator</div>
+        <button class="add-account-button" onclick="redirectToNewAccountPage()">+</button>
+    </div>
+
+    <div class="content">
+        <h2>Welcome, {{ user.email }}</h2>
+        <p>Your Multi-Factor Authentication (MFA) Accounts:</p>
+
+        {% if totp_tokens %}
+            {% for token in totp_tokens %}
+                <div class="account-item">
+                    <h3>{{ token.name }}</h3>
+                    <div class="otp-info">
+                        <div class="otp">{{ token.token }}</div>
+                        <div class="timer">Expires in {{ token.remaining_seconds }} seconds</div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No MFA accounts added yet. Click the "+" button to add an account.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function redirectToNewAccountPage() {
+            window.location.href = '/add_account';
+        }
+    </script>
+</body>
+</html>
