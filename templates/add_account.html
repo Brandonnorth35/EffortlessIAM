@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Account - Authenticator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f6f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button[type="submit"] {
+            width: 100%;
+            background-color: #0077CC;
+            color: #fff;
+            padding: 12px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button[type="submit"]:hover {
+            background-color: #005c99;
+        }
+        p {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        a {
+            color: #0077CC;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .logo {
+            width: 300px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        form label {
+            text-align: left;
+            display: block;
+            margin-bottom: 5px;
+            color: #333; /* Added label color */
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <img src="/static/images/logo.png" alt="Logo" class="logo">
+        <h2>Add New Authentication Account</h2>
+        <form action="/add_account" method="POST">
+            <label for="totp_secret">Authentication Secret:</label>
+            <input type="text" id="totp_secret" name="totp_secret" required><br>
+        
+            <label for="account_name">Name of Authentication Method:</label>
+            <input type="text" id="account_name" name="account_name" required><br>
+        
+            <button type="submit">Add Account</button>
+        </form>
+    </div>
+</body>
+</html>

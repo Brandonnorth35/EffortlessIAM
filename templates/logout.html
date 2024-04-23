@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f6f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .logout-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        button[type="submit"] {
+            width: 100%;
+            background-color: #0077CC;
+            color: #fff;
+            padding: 12px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button[type="submit"]:hover {
+            background-color: #005c99;
+        }
+        p {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        a {
+            color: #0077CC;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .logo {
+            width: 300px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    {% if session['username'] %}
+        <div class="logout-container">
+            <img src="/static/images/logo.png" alt="Logo" class="logo">
+            <h2>Logout</h2>
+            <p>You are logged in as {{ session['username'] }}</p>
+            <form action="/logout" method="post">
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+    {% else %}
+        <p>You are not logged in.</p>
+        <p><a href="/login">Login</a> or <a href="/signup">Sign up</a></p>
+    {% endif %}
+</body>
+</html>
