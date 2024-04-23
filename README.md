@@ -29,7 +29,7 @@ PyOTP
 
 You can install the required Python packages using pip:
 
-pip install Flask SQLAlchemy Flask-Bcrypt pyotp
+pip install flask flask_sqlalchemy flask_bcrypt pyotp logging
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
